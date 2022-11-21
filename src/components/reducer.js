@@ -1,14 +1,22 @@
-import { CLEAR_CART, DECREASE, INCREASE, REMOVE } from '../actions';
+import { CLEAR_CART, DECREASE, GET_TOTALS, INCREASE, REMOVE } from '../actions';
+import cartItems from '../cart-items';
 
-function reducer(state, action) {
+const initialStore = {
+  cart: cartItems,
+  total: 0,
+  amount: 0
+}
+
+function reducer(state = initialStore, action) {
   const { cart, total, amount } = state;
   let tempCart = [];
   switch (action.type) {
     case CLEAR_CART:
       return { ...state, cart: [] };
     case DECREASE:
+      console.log('flag: ',action.payload.amount);
       if (action.payload.amount === 1) {
-        return reducer(state, {...action, type: REMOVE});
+        return reducer(state, { ...action, type: REMOVE });
       } else {
         tempCart = cart.map((item) => {
           if (item.id === action.payload.id) {
@@ -37,6 +45,21 @@ function reducer(state, action) {
         ...state,
         cart: cart.filter((item) => item.id !== action.payload.id),
       };
+    case GET_TOTALS:
+      let {total, amount} = cart.reduce((cartTotal, cartItem) => {
+        cartTotal.amount += cartItem.amount;
+        cartTotal.total += cartItem.price * cartItem.amount;
+        return cartTotal;
+      }, {
+        total: 0,
+        amount: 0
+      })
+      total = parseFloat(total.toFixed(2));
+      return {
+        ...state,
+        total,
+        amount
+      }
     default:
       return state;
   }
